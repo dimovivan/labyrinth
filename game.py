@@ -146,18 +146,19 @@ def level_menu():
                     return level_1()
 
                 elif (7 * width // 24 <= event.pos[0] <= 7 * width // 24 + width // 12 and
-                      height // 3 <= event.pos[1] <= height // 3 + width // 12):
+                      height // 3 <= event.pos[1] <= height // 3 + width // 12) and data[0]:
                     return level_2()
+
                 elif (11 * width // 24 <= event.pos[0] <= 11 * width // 24 + width // 12 and
-                      height // 3 <= event.pos[1] <= height // 3 + width // 12):
+                      height // 3 <= event.pos[1] <= height // 3 + width // 12) and data[1]:
                     return level_3()
 
                 elif (15 * width // 24 <= event.pos[0] <= 15 * width // 24 + width // 12 and
-                      height // 3 <= event.pos[1] <= height // 3 + width // 12):
+                      height // 3 <= event.pos[1] <= height // 3 + width // 12) and data[2]:
                     return level_4()
 
                 elif (19 * width // 24 <= event.pos[0] <= 19 * width // 24 + width // 12 and
-                      height // 3 <= event.pos[1] <= height // 3 + width // 12):
+                      height // 3 <= event.pos[1] <= height // 3 + width // 12) and data[3]:
                     return level_5()
 
 
