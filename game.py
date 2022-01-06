@@ -1,4 +1,5 @@
 import pygame
+import sys
 from PIL import Image
 from win32api import GetSystemMetrics
 
@@ -63,6 +64,101 @@ pngwin = pygame.image.load('sprites/win.png')
 pngwin_rect = pngwin.get_rect(bottomright=((GetSystemMetrics(0) - GetSystemMetrics(0) // 2) // 2,
                                            (GetSystemMetrics(1) - GetSystemMetrics(1) // 10) // 2))
 screen = pygame.display.set_mode(size)
+data = list(map(int, open('data.txt', 'r').read().split()))
+
+
+def main_menu():
+    fon = pygame.transform.scale(pygame.image.load('sprites/fon.png'), size)
+    screen.blit(fon, (0, 0))
+    text = pygame.transform.scale(pygame.image.load('sprites/labyrinth.png'), (width // 2, height // 6))
+    screen.blit(text, (width // 4, height // 6))
+    playbtn = pygame.transform.scale(pygame.image.load('sprites/playbtn.png'), (width // 6, height // 6))
+    screen.blit(playbtn, ((5 * width) // 12, height // 2))
+    quitbtn = pygame.transform.scale(pygame.image.load('sprites/quitbtn.png'), (width // 6, height // 6))
+    screen.blit(quitbtn, ((5 * width) // 12, (2 * height) // 3 + height // 100))
+
+    pygame.display.flip()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if ((5 * width) // 12 <= event.pos[0] <= (7 * width) // 12 and
+                        height // 2 <= event.pos[1] <= (2 * height) // 3):
+                    return level_menu()
+                elif ((5 * width) // 12 <= event.pos[0] <= (7 * width) // 12 and
+                      ((2 * height) // 3 + height // 100) <= event.pos[1] <= (
+                              2 * height) // 3 + height // 100 + height // 6):
+                    pygame.quit()
+                    sys.exit()
+
+
+def level_menu():
+    fon = pygame.transform.scale(pygame.image.load('sprites/fon.png'), size)
+    screen.blit(fon, (0, 0))
+
+    backbtn = pygame.transform.scale(pygame.image.load('sprites/backbtn.png'), (width // 12, width // 12))
+    screen.blit(backbtn, (width // 100, height // 100))
+
+    btn1 = pygame.transform.scale(pygame.image.load('sprites/btn1.png'), (width // 12, width // 12))
+    screen.blit(btn1, (3 * width // 24, height // 3))
+
+    if data[0]:
+        btn2 = pygame.transform.scale(pygame.image.load('sprites/btn2.png'), (width // 12, width // 12))
+    else:
+        btn2 = pygame.transform.scale(pygame.image.load('sprites/btn2x.png'), (width // 12, width // 12))
+    screen.blit(btn2, (7 * width // 24, height // 3))
+
+    if data[1]:
+        btn3 = pygame.transform.scale(pygame.image.load('sprites/btn3.png'), (width // 12, width // 12))
+    else:
+        btn3 = pygame.transform.scale(pygame.image.load('sprites/btn3x.png'), (width // 12, width // 12))
+    screen.blit(btn3, (11 * width // 24, height // 3))
+
+    if data[2]:
+        btn4 = pygame.transform.scale(pygame.image.load('sprites/btn4.png'), (width // 12, width // 12))
+    else:
+        btn4 = pygame.transform.scale(pygame.image.load('sprites/btn4x.png'), (width // 12, width // 12))
+    screen.blit(btn4, (15 * width // 24, height // 3))
+
+    if data[3]:
+        btn5 = pygame.transform.scale(pygame.image.load('sprites/btn5.png'), (width // 12, width // 12))
+    else:
+        btn5 = pygame.transform.scale(pygame.image.load('sprites/btn5x.png'), (width // 12, width // 12))
+    screen.blit(btn5, (19 * width // 24, height // 3))
+
+    pygame.display.flip()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if (width // 100 <= event.pos[0] <= width // 100 + width // 12 and
+                        height // 100 <= event.pos[1] <= height // 100 + width // 12):
+                    return main_menu()
+
+                elif (3 * width // 24 <= event.pos[0] <= 3 * width // 24 + width // 12 and
+                      height // 3 <= event.pos[1] <= height // 3 + width // 12):
+                    return level_1()
+
+                elif (7 * width // 24 <= event.pos[0] <= 7 * width // 24 + width // 12 and
+                      height // 3 <= event.pos[1] <= height // 3 + width // 12):
+                    return level_2()
+                elif (11 * width // 24 <= event.pos[0] <= 11 * width // 24 + width // 12 and
+                      height // 3 <= event.pos[1] <= height // 3 + width // 12):
+                    return level_3()
+
+                elif (15 * width // 24 <= event.pos[0] <= 15 * width // 24 + width // 12 and
+                      height // 3 <= event.pos[1] <= height // 3 + width // 12):
+                    return level_4()
+
+                elif (19 * width // 24 <= event.pos[0] <= 19 * width // 24 + width // 12 and
+                      height // 3 <= event.pos[1] <= height // 3 + width // 12):
+                    return level_5()
 
 
 class Tile(pygame.sprite.Sprite):
@@ -141,7 +237,28 @@ def move(hero, movement):
             hero.move(x1 + tile_width, y1, x + 1, y, 1)
 
 
+def level_1():
+    pass
+
+
+def level_2():
+    pass
+
+
+def level_3():
+    pass
+
+
+def level_4():
+    pass
+
+
+def level_5():
+    pass
+
+
 if __name__ == '__main__':
+    main_menu()
     ranning = True
     ranning1 = True
     player, max_x, max_y = generate_level(level_map)
@@ -149,8 +266,9 @@ if __name__ == '__main__':
         if win:
             ranning1 = False
             pngwin = pygame.image.load('sprites/win.png')
-            pngwin_rect = pngwin.get_rect(bottomright=((GetSystemMetrics(0) - GetSystemMetrics(0) // 2) // 2 + GetSystemMetrics(0) // 2,
-                                                       (GetSystemMetrics(1) - GetSystemMetrics(1) // 10) // 2 + GetSystemMetrics(1) // 10))
+            pngwin_rect = pngwin.get_rect(
+                bottomright=((GetSystemMetrics(0) - GetSystemMetrics(0) // 2) // 2 + GetSystemMetrics(0) // 2,
+                             (GetSystemMetrics(1) - GetSystemMetrics(1) // 10) // 2 + GetSystemMetrics(1) // 10))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     ranning = False
