@@ -2,6 +2,7 @@ import pygame
 import sys
 from PIL import Image
 from win32api import GetSystemMetrics
+import random
 
 
 def image(name, tile_width, tile_height):
@@ -27,12 +28,18 @@ pygame.init()
 tile_width = GetSystemMetrics(0) // 11
 tile_height = GetSystemMetrics(1) // 11
 level_map = load_level('1.txt')
+clock = pygame.time.Clock()
 size = width, height = GetSystemMetrics(0), GetSystemMetrics(1)
 win = False
+game_over = False
+star_sprites = pygame.sprite.Group()
+screen_rect = (0, 0, GetSystemMetrics(0), GetSystemMetrics(1))
 
 image('wall1.png', tile_width, tile_height)
 image('floor1.png', tile_width, tile_height)
 image('finish1.png', tile_width, tile_height)
+image('trap1.png', tile_width, tile_height)
+image('trap2.png', tile_width, tile_height)
 image('1l.png', tile_width // 2, tile_width // 2)
 image('2l.png', tile_width // 2, tile_width // 2)
 image('3l.png', tile_width // 2, tile_width // 2)
@@ -46,11 +53,14 @@ image('1u.png', tile_width // 2, tile_width // 2)
 image('2u.png', tile_width // 2, tile_width // 2)
 image('3u.png', tile_width // 2, tile_width // 2)
 image('win.png', GetSystemMetrics(0) // 2, GetSystemMetrics(1) // 10)
+image('game_over.png', GetSystemMetrics(0) // 2, GetSystemMetrics(1) // 10)
 
 tile_images = {
     'wall': pygame.image.load('sprites/wall1.png'),
     'floor': pygame.image.load('sprites/floor1.png'),
     'finish': pygame.image.load('sprites/finish1.png'),
+    'trap': pygame.image.load('sprites/trap1.png'),
+    'trap1': pygame.image.load('sprites/trap2.png')
 }
 player_sprite = \
     [[pygame.image.load('sprites/1l.png'), pygame.image.load('sprites/2l.png'), pygame.image.load('sprites/3l.png')],
@@ -190,6 +200,54 @@ class Player(pygame.sprite.Sprite):
         self.image = player_sprite[n][t]
 
 
+def create_particles(position, sb):
+    if sb == 0:
+        particle_count = 20
+        numbers = range(-5, 6)
+    else:
+        particle_count = 3
+        numbers = range(-2, 3)
+    for _ in range(particle_count):
+        Particle(position, random.choice(numbers), random.choice(numbers), sb)
+
+
+class Particle(pygame.sprite.Sprite):
+    fire = []
+    fire1 = [pygame.image.load("sprites/star.png")]
+    for scale in (5, 10, 20):
+        fire1.append(pygame.transform.scale(fire1[0], (scale, scale)))
+    fire2 = [pygame.image.load("sprites/blood1.png")]
+    for scale in (5, 10, 20):
+        fire2.append(pygame.transform.scale(fire2[0], (scale, scale)))
+    fire.append(fire1)
+    fire.append(fire2)
+
+    def __init__(self, pos, dx, dy, t):
+        super().__init__(star_sprites)
+        self.image = random.choice(self.fire[t])
+        self.rect = self.image.get_rect()
+        self.t = t
+        self.x = 0
+
+        self.velocity = [dx, dy]
+        self.rect.x, self.rect.y = pos
+        if t == 0:
+            self.gravity = 0.04
+        else:
+            self.gravity = 0.1
+
+    def update(self):
+        self.velocity[1] += self.gravity
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        self.x += 1
+        if self.t == 1 and self.x > 20:
+            self.kill()
+        if not self.rect.colliderect(screen_rect):
+            self.kill()
+
+
+
 def generate_level(level):
     new_player, x, y = None, None, None
     for y in range(len(level)):
@@ -198,6 +256,8 @@ def generate_level(level):
                 Tile('floor', x, y)
             elif level[y][x] == '#':
                 Tile('wall', x, y)
+            elif level[y][x] == '!':
+                Tile('trap', x, y)
             elif level[y][x] == '@':
                 Tile('finish', x, y)
             elif level[y][x] == '?':
@@ -207,32 +267,47 @@ def generate_level(level):
 
 
 def move(hero, movement):
-    global win, ranning
+    global win, game_over
     x, y = hero.pos
     x1, y1 = hero.rect[0], hero.rect[1]
     if movement == 'up':
         if y > 0 and level_map[y - 1][x] == '@':
             hero.move(x1, y1 - tile_height, x, y - 1, 3)
             win = True
+        elif y > 0 and level_map[y - 1][x] == '!':
+            hero.move(x1, y1 - tile_height, x, y - 1, 3)
+            game_over = True
+            Tile('floor', x, y - 1)
         elif y > 0 and level_map[y - 1][x] != '#':
             hero.move(x1, y1 - tile_height, x, y - 1, 3)
-
     elif movement == 'down':
         if y < max_y - 1 and level_map[y + 1][x] == '@':
             hero.move(x1, y1 + tile_height, x, y + 1, 2)
             win = True
+        elif y < max_y - 1 and level_map[y + 1][x] == '!':
+            hero.move(x1, y1 + tile_height, x, y + 1, 2)
+            game_over = True
+            Tile('floor', x, y + 1)
         elif y < max_y - 1 and level_map[y + 1][x] != '#':
             hero.move(x1, y1 + tile_height, x, y + 1, 2)
     elif movement == 'left':
         if x > 0 and level_map[y][x - 1] == '@':
             hero.move(x1 - tile_width, y1, x - 1, y, 0)
             win = True
+        elif x > 0 and level_map[y][x - 1] == '!':
+            hero.move(x1 - tile_width, y1, x - 1, y, 0)
+            game_over = True
+            Tile('floor', x - 1, y)
         elif x > 0 and level_map[y][x - 1] != '#':
             hero.move(x1 - tile_width, y1, x - 1, y, 0)
     elif movement == 'right':
         if x < max_x - 1 and level_map[y][x + 1] == '@':
             hero.move(x1 + tile_width, y1, x + 1, y, 1)
             win = True
+        elif x < max_x - 1 and level_map[y][x + 1] == '!':
+            hero.move(x1 + tile_width, y1, x + 1, y, 1)
+            game_over = True
+            Tile('floor', x + 1, y)
         elif x < max_x - 1 and level_map[y][x + 1] != '#':
             hero.move(x1 + tile_width, y1, x + 1, y, 1)
 
@@ -264,6 +339,9 @@ if __name__ == '__main__':
     player, max_x, max_y = generate_level(level_map)
     while ranning:
         if win:
+            screen.fill((0, 0, 0))
+            tiles_group.draw(screen)
+            player_group.draw(screen)
             ranning1 = False
             pngwin = pygame.image.load('sprites/win.png')
             pngwin_rect = pngwin.get_rect(
@@ -272,8 +350,34 @@ if __name__ == '__main__':
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     ranning = False
+            create_particles((-10, GetSystemMetrics(1)), 0)
+            create_particles((GetSystemMetrics(0), GetSystemMetrics(1)), 0)
             screen.blit(pngwin, pngwin_rect)
+            star_sprites.update()
+            star_sprites.draw(screen)
+            pygame.display.flip()
             pygame.display.update()
+            clock.tick(50)
+        elif game_over:
+            screen.fill((0, 0, 0))
+            tiles_group.draw(screen)
+            ranning1 = False
+            player_group.draw(screen)
+            pnggame_over = pygame.image.load('sprites/game_over.png')
+            pnggame_over_rect = pngwin.get_rect(
+                bottomright=((GetSystemMetrics(0) - GetSystemMetrics(0) // 2) // 2 + GetSystemMetrics(0) // 2,
+                             (GetSystemMetrics(1) - GetSystemMetrics(1) // 10) // 2 + GetSystemMetrics(1) // 10))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    ranning = False
+            create_particles((player.pos[0] * tile_width + tile_width // 2, player.pos[1] * tile_height + tile_height // 2), 1)
+            screen.blit(pnggame_over, pnggame_over_rect)
+            screen.blit(pygame.image.load('sprites/trap2.png'), (player.pos[0] * tile_width, player.pos[1] * tile_height))
+            star_sprites.update()
+            star_sprites.draw(screen)
+            pygame.display.flip()
+            pygame.display.update()
+            clock.tick(50)
         if ranning1:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
