@@ -27,11 +27,8 @@ def load_level(filename):
 pygame.init()
 tile_width = GetSystemMetrics(0) // 11
 tile_height = GetSystemMetrics(1) // 11
-level_map = load_level('1.txt')
 clock = pygame.time.Clock()
 size = width, height = GetSystemMetrics(0), GetSystemMetrics(1)
-win = False
-game_over = False
 star_sprites = pygame.sprite.Group()
 screen_rect = (0, 0, GetSystemMetrics(0), GetSystemMetrics(1))
 
@@ -153,23 +150,23 @@ def level_menu():
 
                 elif (3 * width // 24 <= event.pos[0] <= 3 * width // 24 + width // 12 and
                       height // 3 <= event.pos[1] <= height // 3 + width // 12):
-                    return level_1()
+                    return level(1)
 
                 elif (7 * width // 24 <= event.pos[0] <= 7 * width // 24 + width // 12 and
                       height // 3 <= event.pos[1] <= height // 3 + width // 12) and data[0]:
-                    return level_2()
+                    return level(2)
 
                 elif (11 * width // 24 <= event.pos[0] <= 11 * width // 24 + width // 12 and
                       height // 3 <= event.pos[1] <= height // 3 + width // 12) and data[1]:
-                    return level_3()
+                    return level(3)
 
                 elif (15 * width // 24 <= event.pos[0] <= 15 * width // 24 + width // 12 and
                       height // 3 <= event.pos[1] <= height // 3 + width // 12) and data[2]:
-                    return level_4()
+                    return level(4)
 
                 elif (19 * width // 24 <= event.pos[0] <= 19 * width // 24 + width // 12 and
                       height // 3 <= event.pos[1] <= height // 3 + width // 12) and data[3]:
-                    return level_5()
+                    return level(5)
 
 
 class Tile(pygame.sprite.Sprite):
@@ -248,7 +245,6 @@ class Particle(pygame.sprite.Sprite):
             self.kill()
 
 
-
 def generate_level(level):
     new_player, x, y = None, None, None
     for y in range(len(level)):
@@ -313,30 +309,13 @@ def move(hero, movement):
             hero.move(x1 + tile_width, y1, x + 1, y, 1)
 
 
-def level_1():
-    pass
-
-
-def level_2():
-    pass
-
-
-def level_3():
-    pass
-
-
-def level_4():
-    pass
-
-
-def level_5():
-    pass
-
-
-if __name__ == '__main__':
-    main_menu()
+def level(level_number):
+    global level_map, max_x, max_y, pngwin, win, game_over
+    level_map = load_level(f'{level_number}.txt')
     ranning = True
     ranning1 = True
+    win = False
+    game_over = False
     player, max_x, max_y = generate_level(level_map)
     while ranning:
         if win:
@@ -348,9 +327,18 @@ if __name__ == '__main__':
             pngwin_rect = pngwin.get_rect(
                 bottomright=((GetSystemMetrics(0) - GetSystemMetrics(0) // 2) // 2 + GetSystemMetrics(0) // 2,
                              (GetSystemMetrics(1) - GetSystemMetrics(1) // 10) // 2 + GetSystemMetrics(1) // 10))
+            restartbtn = pygame.transform.scale(pygame.image.load('sprites/restartbtn.png'), (width // 6, height // 6))
+            screen.blit(restartbtn, ((5 * width) // 12, 3 * height // 5))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     ranning = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if ((5 * width) // 12 <= event.pos[0] <= (7 * width) // 12 and
+                            3 * height // 5 <= event.pos[1] <= (23 * height) // 30):
+                        screen.fill((0, 0, 0))
+                        tiles_group.empty()
+                        player_group.empty()
+                        return level(level_number)
             create_particles((-10, GetSystemMetrics(1)), 0)
             create_particles((GetSystemMetrics(0), GetSystemMetrics(1)), 0)
             screen.blit(pngwin, pngwin_rect)
@@ -371,9 +359,20 @@ if __name__ == '__main__':
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     ranning = False
-            create_particles((player.pos[0] * tile_width + tile_width // 2, player.pos[1] * tile_height + tile_height // 2), 1)
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if ((5 * width) // 12 <= event.pos[0] <= (7 * width) // 12 and
+                            3 * height // 5 <= event.pos[1] <= (23 * height) // 30):
+                        screen.fill((0, 0, 0))
+                        tiles_group.empty()
+                        player_group.empty()
+                        return level(level_number)
+            create_particles(
+                (player.pos[0] * tile_width + tile_width // 2, player.pos[1] * tile_height + tile_height // 2), 1)
             screen.blit(pnggame_over, pnggame_over_rect)
-            screen.blit(pygame.image.load('sprites/trap2.png'), (player.pos[0] * tile_width, player.pos[1] * tile_height))
+            screen.blit(pygame.image.load('sprites/trap2.png'),
+                        (player.pos[0] * tile_width, player.pos[1] * tile_height))
+            restartbtn = pygame.transform.scale(pygame.image.load('sprites/restartbtn.png'), (width // 6, height // 6))
+            screen.blit(restartbtn, ((5 * width) // 12, 3 * height // 5))
             star_sprites.update()
             star_sprites.draw(screen)
             pygame.display.flip()
@@ -397,3 +396,7 @@ if __name__ == '__main__':
             player_group.draw(screen)
             pygame.display.flip()
     pygame.quit()
+
+
+if __name__ == '__main__':
+    main_menu()
