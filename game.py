@@ -148,6 +148,8 @@ def level_menu():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                return main_menu()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if (width // 100 <= event.pos[0] <= width // 100 + width // 12 and
                         height // 100 <= event.pos[1] <= height // 100 + width // 12):
@@ -345,6 +347,9 @@ def move(hero, movement):
 
 def level(level_number):
     global level_map, max_x, max_y, pngwin, win, game_over, fire_game_over
+    tiles_group.empty()
+    player_group.empty()
+    star_sprites.empty()
     level_map = load_level(f'{level_number}.txt')
     ranning = True
     ranning1 = True
@@ -372,14 +377,18 @@ def level(level_number):
                     if ((5 * width) // 12 <= event.pos[0] <= (7 * width) // 12 and
                             3 * height // 5 <= event.pos[1] <= (23 * height) // 30):
                         screen.fill((0, 0, 0))
-                        tiles_group.empty()
-                        player_group.empty()
                         return level(level_number)
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    return main_menu()
             create_particles((-10, GetSystemMetrics(1)), 0)
             create_particles((GetSystemMetrics(0), GetSystemMetrics(1)), 0)
             screen.blit(pngwin, pngwin_rect)
             star_sprites.update()
             star_sprites.draw(screen)
+            if level_number != 5:
+                with open('data.txt', 'w') as file:
+                    data[level_number - 1] = 1
+                    file.write(' '.join(map(str, data)))
             pygame.display.flip()
             pygame.display.update()
             clock.tick(50)
@@ -395,16 +404,15 @@ def level(level_number):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     ranning = False
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    return main_menu()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if ((5 * width) // 12 <= event.pos[0] <= (7 * width) // 12 and
                             3 * height // 5 <= event.pos[1] <= (23 * height) // 30):
                         screen.fill((0, 0, 0))
-                        tiles_group.empty()
-                        player_group.empty()
                         return level(level_number)
             screen.blit(pnggame_over, pnggame_over_rect)
-            restartbtn = pygame.transform.scale(pygame.image.load('sprites/restartbtn.png'), (width // 6, height // 6))
-            screen.blit(restartbtn, ((5 * width) // 12, 3 * height // 5))
+
             if fire_game_over:
                 fire_sprites.draw(screen)
             else:
@@ -414,6 +422,8 @@ def level(level_number):
                             (player.pos[0] * tile_width, player.pos[1] * tile_height))
                 star_sprites.update()
                 star_sprites.draw(screen)
+            restartbtn = pygame.transform.scale(pygame.image.load('sprites/restartbtn.png'), (width // 6, height // 6))
+            screen.blit(restartbtn, ((5 * width) // 12, 3 * height // 5))
             pygame.display.flip()
             pygame.display.update()
             clock.tick(50)
@@ -430,6 +440,8 @@ def level(level_number):
                         move(player, 'right')
                     if event.key == pygame.K_LEFT:
                         move(player, 'left')
+                    if event.key == pygame.K_ESCAPE:
+                        return main_menu()
             tiles_group.draw(screen)
             player_group.draw(screen)
             if fire_time % 70 == 0:
