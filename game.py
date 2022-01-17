@@ -25,8 +25,8 @@ def load_level(filename):
 
 
 pygame.init()
-tile_width = GetSystemMetrics(0) // 11
-tile_height = GetSystemMetrics(1) // 11
+tile_width = GetSystemMetrics(0) // 20
+tile_height = GetSystemMetrics(1) // 20
 clock = pygame.time.Clock()
 size = width, height = GetSystemMetrics(0), GetSystemMetrics(1)
 star_sprites = pygame.sprite.Group()
@@ -38,9 +38,9 @@ image('wall1.png', tile_width, tile_height)
 image('floor1.png', tile_width, tile_height)
 image('finish1.png', tile_width, tile_height)
 image('trap1.png', tile_width, tile_height)
-image('trap2.png', tile_width, tile_height)
 image('trap3.png', tile_width, tile_height)
 image('fire1.png', tile_width // 3, tile_height // 2)
+image('trap2.png', tile_width, tile_height)
 image('1l.png', tile_width // 2, tile_width // 2)
 image('2l.png', tile_width // 2, tile_width // 2)
 image('3l.png', tile_width // 2, tile_width // 2)
@@ -217,7 +217,7 @@ class fire(pygame.sprite.Sprite):
         self.velocity = [dx, dy]
 
     def update(self, hero):
-        global game_over, fire_game_over
+        global game_over, fire_game_over, fon_music
         x, y = hero.pos
         self.rect.y += self.velocity[1]
         if not self.rect.colliderect(screen_rect):
@@ -225,6 +225,9 @@ class fire(pygame.sprite.Sprite):
         if y * tile_height - tile_height // 4 < self.rect.y < y * tile_height and self.rect.x // tile_width == x:
             fire_game_over = True
             game_over = True
+            fon_music.stop()
+            fon_music = pygame.mixer.Sound('soundtreck/game_over.mp3')
+            fon_music.play()
 
 
 def create_particles(position, sb):
@@ -300,16 +303,22 @@ def generate_level(level):
 
 
 def move(hero, movement):
-    global win, game_over
+    global win, game_over, fon_music
     x, y = hero.pos
     x1, y1 = hero.rect[0], hero.rect[1]
     if movement == 'up':
         if y > 0 and level_map[y - 1][x] == '@':
             hero.move(x1, y1 - tile_height, x, y - 1, 3)
             win = True
+            fon_music.stop()
+            fon_music = pygame.mixer.Sound('soundtreck/win.mp3')
+            fon_music.play()
         elif y > 0 and level_map[y - 1][x] == '!':
             hero.move(x1, y1 - tile_height, x, y - 1, 3)
             game_over = True
+            fon_music.stop()
+            fon_music = pygame.mixer.Sound('soundtreck/game_over.mp3')
+            fon_music.play()
             Tile('floor', x, y - 1)
         elif y > 0 and level_map[y - 1][x] not in ['#', '*']:
             hero.move(x1, y1 - tile_height, x, y - 1, 3)
@@ -317,9 +326,15 @@ def move(hero, movement):
         if y < max_y - 1 and level_map[y + 1][x] == '@':
             hero.move(x1, y1 + tile_height, x, y + 1, 2)
             win = True
+            fon_music.stop()
+            fon_music = pygame.mixer.Sound('soundtreck/win.mp3')
+            fon_music.play()
         elif y < max_y - 1 and level_map[y + 1][x] == '!':
             hero.move(x1, y1 + tile_height, x, y + 1, 2)
             game_over = True
+            fon_music.stop()
+            fon_music = pygame.mixer.Sound('soundtreck/game_over.mp3')
+            fon_music.play()
             Tile('floor', x, y + 1)
         elif y < max_y - 1 and level_map[y + 1][x] not in ['#', '*']:
             hero.move(x1, y1 + tile_height, x, y + 1, 2)
@@ -327,9 +342,15 @@ def move(hero, movement):
         if x > 0 and level_map[y][x - 1] == '@':
             hero.move(x1 - tile_width, y1, x - 1, y, 0)
             win = True
+            fon_music.stop()
+            fon_music = pygame.mixer.Sound('soundtreck/win.mp3')
+            fon_music.play()
         elif x > 0 and level_map[y][x - 1] == '!':
             hero.move(x1 - tile_width, y1, x - 1, y, 0)
             game_over = True
+            fon_music.stop()
+            fon_music = pygame.mixer.Sound('soundtreck/game_over.mp3')
+            fon_music.play()
             Tile('floor', x - 1, y)
         elif x > 0 and level_map[y][x - 1] not in ['#', '*']:
             hero.move(x1 - tile_width, y1, x - 1, y, 0)
@@ -337,19 +358,30 @@ def move(hero, movement):
         if x < max_x - 1 and level_map[y][x + 1] == '@':
             hero.move(x1 + tile_width, y1, x + 1, y, 1)
             win = True
+            fon_music.stop()
+            fon_music = pygame.mixer.Sound('soundtreck/win.mp3')
+            fon_music.play()
         elif x < max_x - 1 and level_map[y][x + 1] == '!':
             hero.move(x1 + tile_width, y1, x + 1, y, 1)
             game_over = True
+            fon_music.stop()
+            fon_music = pygame.mixer.Sound('soundtreck/game_over.mp3')
+            fon_music.play()
             Tile('floor', x + 1, y)
         elif x < max_x - 1 and level_map[y][x + 1] not in ['#', '*']:
             hero.move(x1 + tile_width, y1, x + 1, y, 1)
 
 
 def level(level_number):
-    global level_map, max_x, max_y, pngwin, win, game_over, fire_game_over
+    global level_map, max_x, max_y, pngwin, win, game_over, fire_game_over, fon_music
     tiles_group.empty()
     player_group.empty()
     star_sprites.empty()
+    fire_sprites.empty()
+    try:
+        fon_music.stop()
+    except BaseException:
+        pass
     level_map = load_level(f'{level_number}.txt')
     ranning = True
     ranning1 = True
@@ -357,7 +389,10 @@ def level(level_number):
     game_over = False
     fire_game_over = False
     player, max_x, max_y = generate_level(level_map)
+    pygame.mixer.music.load('soundtreck/fon.mp3')
+    fon_music = pygame.mixer.Sound('soundtreck/fon.mp3')
     fire_time = 0
+    fon_music.play(-1)
     while ranning:
         if win:
             screen.fill((0, 0, 0))
@@ -428,6 +463,7 @@ def level(level_number):
             pygame.display.update()
             clock.tick(50)
         if ranning1:
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     ranning = False
