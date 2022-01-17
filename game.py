@@ -372,6 +372,34 @@ def move(hero, movement):
             hero.move(x1 + tile_width, y1, x + 1, y, 1)
 
 
+def pause():
+    tiles_group.draw(screen)
+    player_group.draw(screen)
+    fire_sprites.draw(screen)
+    text = pygame.transform.scale(pygame.image.load('sprites/pause.png'), (width // 2, height // 6))
+    screen.blit(text, (width // 4, height // 6))
+    restartbtn = pygame.transform.scale(pygame.image.load('sprites/restartbtn.png'), (width // 6, height // 6))
+    screen.blit(restartbtn, ((5 * width) // 12, height // 2))
+    menubtn = pygame.transform.scale(pygame.image.load('sprites/menubtn.png'), (width // 6, height // 6))
+    screen.blit(menubtn, ((5 * width) // 12, (2 * height) // 3 + height // 100))
+    pygame.display.flip()
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if ((5 * width) // 12 <= event.pos[0] <= (7 * width) // 12 and
+                        height // 2 <= event.pos[1] <= (2 * height) // 3):
+                    return 'restart'
+                elif ((5 * width) // 12 <= event.pos[0] <= (7 * width) // 12 and
+                      ((2 * height) // 3 + height // 100) <= event.pos[1] <= (
+                              2 * height) // 3 + height // 100 + height // 6):
+                    return 'menu'
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                return
+
+
 def level(level_number):
     global level_map, max_x, max_y, pngwin, win, game_over, fire_game_over, fon_music
     tiles_group.empty()
@@ -405,6 +433,8 @@ def level(level_number):
                              (GetSystemMetrics(1) - GetSystemMetrics(1) // 10) // 2 + GetSystemMetrics(1) // 10))
             restartbtn = pygame.transform.scale(pygame.image.load('sprites/restartbtn.png'), (width // 6, height // 6))
             screen.blit(restartbtn, ((5 * width) // 12, 3 * height // 5))
+            menubtn = pygame.transform.scale(pygame.image.load('sprites/menubtn.png'), (width // 6, height // 6))
+            screen.blit(menubtn, ((5 * width) // 12, 4 * height // 5))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     ranning = False
@@ -413,8 +443,10 @@ def level(level_number):
                             3 * height // 5 <= event.pos[1] <= (23 * height) // 30):
                         screen.fill((0, 0, 0))
                         return level(level_number)
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    return main_menu()
+                    elif ((5 * width) // 12 <= event.pos[0] <= (7 * width) // 12 and
+                          4 * height // 5 <= event.pos[1] <= (29 * height) // 30):
+                        fon_music.stop()
+                        return main_menu()
             create_particles((-10, GetSystemMetrics(1)), 0)
             create_particles((GetSystemMetrics(0), GetSystemMetrics(1)), 0)
             screen.blit(pngwin, pngwin_rect)
@@ -439,13 +471,15 @@ def level(level_number):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     ranning = False
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    return main_menu()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if ((5 * width) // 12 <= event.pos[0] <= (7 * width) // 12 and
                             3 * height // 5 <= event.pos[1] <= (23 * height) // 30):
                         screen.fill((0, 0, 0))
                         return level(level_number)
+                    elif ((5 * width) // 12 <= event.pos[0] <= (7 * width) // 12 and
+                          4 * height // 5 <= event.pos[1] <= (29 * height) // 30):
+                        fon_music.stop()
+                        return main_menu()
             screen.blit(pnggame_over, pnggame_over_rect)
 
             if fire_game_over:
@@ -459,11 +493,13 @@ def level(level_number):
                 star_sprites.draw(screen)
             restartbtn = pygame.transform.scale(pygame.image.load('sprites/restartbtn.png'), (width // 6, height // 6))
             screen.blit(restartbtn, ((5 * width) // 12, 3 * height // 5))
+            menubtn = pygame.transform.scale(pygame.image.load('sprites/menubtn.png'), (width // 6, height // 6))
+            screen.blit(menubtn, ((5 * width) // 12, 4 * height // 5))
             pygame.display.flip()
             pygame.display.update()
             clock.tick(50)
         if ranning1:
-
+            screen.fill((0, 0, 0))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     ranning = False
@@ -477,7 +513,12 @@ def level(level_number):
                     if event.key == pygame.K_LEFT:
                         move(player, 'left')
                     if event.key == pygame.K_ESCAPE:
-                        return main_menu()
+                        x = pause()
+                        if x == 'restart':
+                            return level(level_number)
+                        elif x == 'menu':
+                            fon_music.stop()
+                            return main_menu()
             tiles_group.draw(screen)
             player_group.draw(screen)
             if fire_time % 70 == 0:
