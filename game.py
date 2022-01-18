@@ -401,11 +401,12 @@ def pause():
 
 
 def level(level_number):
-    global level_map, max_x, max_y, pngwin, win, game_over, fire_game_over, fon_music
+    global level_map, max_x, max_y, pngwin, win, game_over, fire_game_over, fon_music, fire_pos
     tiles_group.empty()
     player_group.empty()
     star_sprites.empty()
     fire_sprites.empty()
+    fire_pos = []
     try:
         fon_music.stop()
     except BaseException:
