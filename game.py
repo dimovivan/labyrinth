@@ -205,7 +205,7 @@ class Player(pygame.sprite.Sprite):
         self.image = player_sprite[n][t]
 
 
-class fire(pygame.sprite.Sprite):
+class Fire(pygame.sprite.Sprite):
     fire = [pygame.image.load("sprites/fire1.png")]
 
     def __init__(self, pos, dx, dy):
@@ -241,7 +241,7 @@ def create_particles(position, sb):
         for _ in range(particle_count):
             Particle(position, random.choice(numbers), random.choice(numbers), sb)
     else:
-        fire(position, 0, tile_height // 4)
+        Fire(position, 0, tile_height // 4)
 
 
 class Particle(pygame.sprite.Sprite):
